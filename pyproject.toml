@@ -1,0 +1,66 @@
+[build-system]
+requires = ["scikit-build-core>=1.0", "nanobind>=2.0"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "feetech-driver"
+version = "0.2.0"
+description = "Driver for Feetech SMS/STS serial-bus servos"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Specialist AI" }]
+keywords = ["feetech", "sts3215", "servo", "serial bus", "robotics"]
+# Linux only: the bus uses termios and flock.
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: C++",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Scientific/Engineering",
+  "Topic :: System :: Hardware :: Hardware Drivers",
+  "Typing :: Typed",
+]
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/specialist-ai/feetech_driver"
+Issues = "https://github.com/specialist-ai/feetech_driver/issues"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0",
+  "ruff==0.15.0",
+]
+
+[tool.scikit-build]
+minimum-version = "1.0"
+build-dir = "build/wheel/{wheel_tag}"
+wheel.packages = ["python/feetech_driver"]
+
+[tool.scikit-build.cmake.define]
+FEETECH_BUILD_PYTHON = "ON"
+FEETECH_INSTALL = "OFF"
+FEETECH_BUILD_TESTING = "OFF"
+
+[tool.uv]
+python-preference = "only-managed"
+
+[tool.pytest.ini_options]
+testpaths = ["python/tests"]
+
+[tool.ruff]
+line-length = 100
+src = ["python"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B"]
