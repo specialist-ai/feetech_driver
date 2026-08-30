@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  cxx:
+    name: C++ (${{ matrix.build_type }}, shared=${{ matrix.shared }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Debug, RelWithDebInfo]
+        # The wheel links the static library. A distribution package ships the
+        # shared one, which keeps one shared-tty registry per process.
+        shared: ["ON", "OFF"]
+    steps:
+      - uses: actions/checkout@v7
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ninja-build libgtest-dev
+      - run: >
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DBUILD_SHARED_LIBS=${{ matrix.shared }}
+      - run: cmake --build build
+      - run: ctest --test-dir build --output-on-failure
+      - name: Build a consumer against the installed package
+        run: |
+          cmake --install build --prefix "$PWD/prefix"
+          cmake -S test/consumer -B build-consumer -G Ninja -DCMAKE_PREFIX_PATH="$PWD/prefix"
+          cmake --build build-consumer
+          ./build-consumer/consumer
+
+  python:
+    name: Python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          python-version: "3.14"
+      - run: uv sync --locked
+      - run: uv run ruff format --check
+      - run: uv run ruff check
+      - run: uv run pytest
+      - name: The extension links only the C and C++ runtimes
+        run: |
+          so=$(uv run python -c "import feetech_driver._core as c; print(c.__file__)")
+          unexpected=$(ldd "$so" | awk '{print $1}' \
+            | grep -vE '^(linux-vdso|libc|libm|libstdc\+\+|libgcc_s|libpthread|libdl|/lib64/ld-linux)' \
+            | grep '\.so' || true)
+          if [ -n "$unexpected" ]; then
+            echo "the extension links an unexpected library:" >&2
+            echo "$unexpected" >&2
+            exit 1
+          fi

@@ -1,0 +1,29 @@
+name: Wheels
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pypa/cibuildwheel@v4.3.5
+        env:
+          # Linux only: the bus opens a tty with termios and takes a flock.
+          # 64-bit only: no robot runs 32-bit x86.
+          CIBW_BUILD: "cp310-manylinux_* cp311-manylinux_* cp312-manylinux_* cp313-manylinux_* cp314-manylinux_*"
+          CIBW_ARCHS_LINUX: auto64
+          CIBW_TEST_REQUIRES: pytest
+          CIBW_TEST_COMMAND: pytest {project}/python/tests -q
+      - uses: actions/upload-artifact@v7
+        with:
+          name: wheels-${{ matrix.os }}
+          path: wheelhouse/*.whl

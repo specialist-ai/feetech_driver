@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>feetech_driver</name>
+  <version>0.1.0</version>
+  <description>
+    C++ driver for Feetech SMS/STS serial-bus servos (STS3215 and relatives).
+    Speaks the wire protocol over a half-duplex TTL bus and drives a set of
+    servos as one device. The library does not depend on ROS; this manifest
+    lets a ROS workspace build it from source alongside its consumers.
+  </description>
+  <maintainer email="chiyufeng@berkeley.edu">Specialist AI</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>cmake</buildtool_depend>
+  <test_depend>gtest</test_depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>
